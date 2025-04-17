@@ -100,9 +100,9 @@
             </form>
         </div>
         
-        <div class="col">
+        <div class="col" style="overflow:auto">
             <div id="comparison" style="margin-top:5px;"></div>
-            <p id="data" style="font-size:13px">
+            <p id="data" style="font-size:14px">
             </p>
         </div>
     </div>
@@ -111,6 +111,7 @@
 
             document.getElementById("btnCalculate").addEventListener("click", function () {
                
+                location.hash="";
                 currentVal = parseFloat(document.getElementById("txtCurrentVal").value);
                 bondFee = parseFloat(document.getElementById("txtBondVal").value);
                 extra = parseFloat(document.getElementById("txtExtra").value) || 0;
@@ -124,6 +125,7 @@
                     displayBreakdown(accelerated.monthlyData);
                     displayComparison(base, accelerated);
                 }
+                location.hash="#txtExtra";
             });
             
             function simulatePayoff(startVal, monthly, extraPayment) {
@@ -160,8 +162,7 @@
                 dataDiv.innerHTML = "";
                 data.forEach((entry, i) => {
                     //dataDiv.innerHTML += `<b>R${entry.balance}</b>  Rate at of <b>R${entry.interest}</b>.....${entry.monthLabel} <br>`;
-                    dataDiv.innerHTML += `📅${entry.monthLabel}→Balance: <b>R${entry.balance}</b> | Interest that month: <b>R${entry.interest}</b><br>`;
-                
+                    dataDiv.innerHTML += `<label style="white-space: nowrap;">📅${entry.monthLabel} →Balance: <b>R${entry.balance}</b> | Interest that month: <b>R${entry.interest}</b></label><br>`;
                 });
             }
 
