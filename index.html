@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BondPayment Calculator</title>
+    <style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .form-control{
+            height: 20px;
+            border-radius: .25rem;
+            border:1px solid #6aa84f;
+            margin-bottom: 5px;
+        }
+        .form-control:focus{
+            border:1px solid #2f541f;
+            outline: none;
+        }
+        button{
+            background-color: #6aa84f;
+            border:1px solid #6aa84f;
+            border-radius: .25rem;
+            color:white;
+            padding: 5px;
+        }
+        button:active{
+            background-color: #2f541f;
+        }
+        button:hover{
+            background-color: #2f541f;
+        }
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .form-group {
+            margin-bottom: 5px;
+        }
+
+        label {
+            display: block;
+        }
+        .col {
+            padding: 10px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2>🏡 Bond Repayment Estimator</h2>
+        <p style="max-width: 700px; margin: 0 auto;">    
+            This tool helps you estimate how long it will take to pay off your bond based on your loan amount,
+            monthly repayment, optional extra payments, and interest rate. 
+            It also compares your current repayment strategy with an accelerated plan to show you how much time and interest you could save.
+        </p>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <form id="bondForm">
+                <div class="form-group">
+                    <label for="txtCurrentVal">Total Loan Value:</label>
+                    <input type="number" id="txtCurrentVal" class="form-control" value="426900" step="0.01" />
+                </div>
+        
+                <div class="form-group">
+                    <label for="txtBondVal">Repayment Value:</label>
+                    <input type="number" id="txtBondVal" class="form-control" value="4080" step="0.01" />
+                </div>
+        
+                <div class="form-group">
+                    <label for="txtExtra">Extra Amount:</label>
+                    <input type="number" id="txtExtra" class="form-control" value="5500" placeholder="Optional" step="0.01" />
+                </div>
+        
+                <div class="form-group">
+                    <label for="txtInterest">Interest:</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="txtInterest" class="form-control" value="10.03" style="width: 140px;" step="0.01" />
+                        <span style="margin-left: 5px;">%</span>
+                    </div>
+                </div>
+        
+                <div class="form-group">
+                    <button type="button" id="btnCalculate">Calculate</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="col">
+            <div id="comparison" style="margin-top:5px;"></div>
+            <p id="data">
+            </p>
+        </div>
+    </div>
+    <script type="text/javascript">
+       let currentVal, bondFee, extra, interestPerc, interest = 0;
+
+            document.getElementById("btnCalculate").addEventListener("click", function () {
+               
+                currentVal = parseFloat(document.getElementById("txtCurrentVal").value);
+                bondFee = parseFloat(document.getElementById("txtBondVal").value);
+                extra = parseFloat(document.getElementById("txtExtra").value) || 0;
+                interestPerc = parseFloat(document.getElementById("txtInterest").value);
+                interest = interestPerc / 100;
+
+                if (validate()) {
+                    let base = simulatePayoff(currentVal, bondFee, 0);
+                    let accelerated = simulatePayoff(currentVal, bondFee, extra);
+
+                    displayBreakdown(accelerated.monthlyData);
+                    displayComparison(base, accelerated);
+                }
+            });
+            
+            function simulatePayoff(startVal, monthly, extraPayment) {
+                let balance = startVal;
+                let months = 0;
+                let totalInterest = 0;
+                let monthlyData = [];
+
+                while (balance > 0 && months < 1000) {
+                    let interestVal = (balance * interest) / 12;
+                    totalInterest += interestVal;
+
+                    balance = balance + interestVal + 69 - (monthly + extraPayment);
+                    balance = Math.max(0, balance); // Avoid negative
+
+                    monthlyData.push({
+                        balance: Math.round(balance),
+                        interest: Math.round(interestVal),
+                        monthLabel: setFormatedDate(months)
+                    });
+
+                    months++;
+                }
+
+                return {
+                    months,
+                    totalInterest: Math.round(totalInterest),
+                    monthlyData
+                };
+            }
+
+            function displayBreakdown(data) {
+                let dataDiv = document.getElementById("data");
+                dataDiv.innerHTML = "";
+                data.forEach((entry, i) => {
+                    dataDiv.innerHTML += `<b>R${entry.balance}</b>  Rate at of <b>R${entry.interest}</b>.....${entry.monthLabel} <br>`;
+                });
+            }
+
+            function displayComparison(base, accelerated) {
+                const result = document.getElementById("comparison");
+                const savedMonths = base.months - accelerated.months;
+                const savedInterest = base.totalInterest - accelerated.totalInterest;
+
+                result.innerHTML = `
+                    <h4>📊 Payoff Comparison</h4>
+                    <p><b>Without Extra:</b> ${base.months} months (Interest: R${base.totalInterest})</p>
+                    <p><b>With Extra:</b> ${accelerated.months} months (Interest: R${accelerated.totalInterest})</p>
+                    <p>🎉 <b>You save:</b> <span style="color:green">${savedMonths} months</span> and <span style="color:green">R${savedInterest}</span> in interest!</p>
+                `;
+            }
+
+            function setFormatedDate(monthsToAdd) {
+                const date = new Date();
+                date.setMonth(date.getMonth() + monthsToAdd + 1); // Start from next month
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                return `${year}-${month}`;
+            }
+
+            function validate() {
+                const loan = parseFloat(document.getElementById("txtCurrentVal").value);
+                const repayment = parseFloat(document.getElementById("txtBondVal").value);
+                const extra = document.getElementById("txtExtra").value;
+                const interest = parseFloat(document.getElementById("txtInterest").value);
+
+                if (isNaN(loan) || loan <= 0) {
+                    alert("Please enter a valid loan amount greater than 0.");
+                    return false;
+                }
+
+                if (isNaN(repayment) || repayment <= 0) {
+                    alert("Please enter a valid monthly repayment amount greater than 0.");
+                    return false;
+                }
+
+                if (extra !== "" && (isNaN(extra) || parseFloat(extra) < 0)) {
+                    alert("Extra payment must be a number greater than or equal to 0.");
+                    return false;
+                }
+
+                if (isNaN(interest) || interest <= 0 || interest > 100) {
+                    alert("Please enter a valid interest rate (between 0 and 100).");
+                    return false;
+                }
+
+                return true;
+            }
+
+    </script>
+</body>
+</html>
