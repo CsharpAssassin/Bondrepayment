@@ -102,7 +102,7 @@
         
         <div class="col">
             <div id="comparison" style="margin-top:5px;"></div>
-            <p id="data">
+            <p id="data" style="font-size:13px">
             </p>
         </div>
     </div>
@@ -159,7 +159,9 @@
                 let dataDiv = document.getElementById("data");
                 dataDiv.innerHTML = "";
                 data.forEach((entry, i) => {
-                    dataDiv.innerHTML += `<b>R${entry.balance}</b>  Rate at of <b>R${entry.interest}</b>.....${entry.monthLabel} <br>`;
+                    //dataDiv.innerHTML += `<b>R${entry.balance}</b>  Rate at of <b>R${entry.interest}</b>.....${entry.monthLabel} <br>`;
+                    dataDiv.innerHTML += `📅${entry.monthLabel}→Balance: <b>R${entry.balance}</b> | Interest that month: <b>R${entry.interest}</b><br>`;
+                
                 });
             }
 
