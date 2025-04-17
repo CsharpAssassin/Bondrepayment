@@ -82,7 +82,7 @@
                 </div>
         
                 <div class="form-group">
-                    <label for="txtExtra">Extra Amount:</label>
+                    <label for="txtExtra" id="lblExtra">Extra Amount:</label>
                     <b>R</b><input type="number" id="txtExtra" class="form-control" value="0" placeholder="Optional" step="0.01" />
                 </div>
         
@@ -125,7 +125,7 @@
                     displayBreakdown(accelerated.monthlyData);
                     displayComparison(base, accelerated);
                 }
-                location.hash="#txtExtra";
+                location.hash="#lblExtra";
             });
             
             function simulatePayoff(startVal, monthly, extraPayment) {
